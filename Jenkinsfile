@@ -41,7 +41,8 @@ pipeline {
                         echo "Procesando ${key}..."
                         def namespace = ""
                         def status = ""
-                        withCredentials([string(credentialsId: value, variable: 'TOKEN_SECRET')]) {
+                        // Usar maskPasswords para ocultar el token en logs
+                        maskPasswords(withPasswords: [[var: 'TOKEN_SECRET', password: value]]) {
                             // Intenta login con el interno
                             def internalLogin = sh(
                                 script: """
