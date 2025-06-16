@@ -5,10 +5,10 @@ pipeline {
         EXTERNAL_SERVER = 'https://external.example.com:6443'
         INTERNAL_SERVER = 'https://internal.example.com:6443'
         DRS_SERVER = 'https://drs.example.com:6443'
-        TOKEN_JSON = 'token.json'
+        TOKEN_JSON = 'tokens.json'
         OUTPUT_JSON = 'namespaces.json'
         TOKEN_REPO = 'https://github.com/usuario/otro-repo-con-token.git' // Cambia esta URL por la real
-        TOKEN_JSON_PATH = 'ruta/en/otro-repo/tokens.json' // Cambia esta ruta por la real dentro del repo clonado
+        TOKEN_REPO_CREDENTIALS = 'master-credentials' // Cambia este valor por el ID real de tus credenciales
     }
 
     stages {
@@ -21,17 +21,16 @@ pipeline {
                         branches: [[name: '*/master']],
                         userRemoteConfigs: [[
                             url: env.TOKEN_REPO,
-                            credentialsId: 'master-credentials'
+                            credentialsId: env.TOKEN_REPO_CREDENTIALS
                         ]]
                     ])
-                    sh "cp ${env.TOKEN_JSON_PATH} ${env.TOKEN_JSON}"
                 }
             }
         }
         stage('Show Token JSON') {
             steps {
                 script {
-                    echo 'Contenido actual de token.json:'
+                    echo 'Contenido actual de tokens.json:'
                     sh "cat ${env.TOKEN_JSON}"
                 }
             }
