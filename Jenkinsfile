@@ -53,12 +53,11 @@ pipeline {
                         def internalLogin = sh(
                             script: """
                                 oc login --insecure-skip-tls-verify --server=${INTERNAL_SERVER} --token=${value} > login_internal.log 2>&1
-                                echo \$?
                             """,
-                            returnStdout: true
-                        ).trim()
+                            returnStatus: true
+                        )
 
-                        if (internalLogin == "0") {
+                        if (internalLogin == 0) {
                             status = "internal"
                             namespace = sh(
                                 script: 'oc get project -o jsonpath="{.metadata.name}"',
@@ -69,11 +68,10 @@ pipeline {
                             def externalLogin = sh(
                                 script: """
                                     oc login --insecure-skip-tls-verify --server=${EXTERNAL_SERVER} --token=${value} > login_external.log 2>&1
-                                    echo \$?
                                 """,
-                                returnStdout: true
-                            ).trim()
-                            if (externalLogin == "0") {
+                                returnStatus: true
+                            )
+                            if (externalLogin == 0) {
                                 status = "external"
                                 namespace = sh(
                                     script: 'oc get project -o jsonpath="{.metadata.name}"',
@@ -84,18 +82,17 @@ pipeline {
                                 def drsLogin = sh(
                                     script: """
                                         oc login --insecure-skip-tls-verify --server=${DRS_SERVER} --token=${value} > login_drs.log 2>&1
-                                        echo \$?
                                     """,
-                                    returnStdout: true
-                                ).trim()
-                                if (drsLogin == "0") {
+                                    returnStatus: true
+                                )
+                                if (drsLogin == 0) {
                                     status = "drs"
                                     namespace = sh(
                                         script: 'oc get project -o jsonpath="{.metadata.name}"',
                                         returnStdout: true
                                     ).trim()
                                 } else {
-                                    status = "failed"
+                                    status = "expired"
                                     namespace = ""
                                 }
                             }
