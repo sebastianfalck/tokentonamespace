@@ -109,5 +109,10 @@ pipeline {
                 }
             }
         }
+        stage('Publicar artefacto JSON') {
+            steps {
+                archiveArtifacts artifacts: env.OUTPUT_JSON, onlyIfSuccessful: true
+            }
+        }
     }
 }
