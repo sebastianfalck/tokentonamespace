@@ -8,16 +8,31 @@ pipeline {
         TOKEN_JSON = 'token.json'
         OUTPUT_JSON = 'namespaces.json'
         TOKEN_REPO = 'https://github.com/usuario/otro-repo-con-token.git' // Cambia esta URL por la real
-        TOKEN_JSON_PATH = 'ruta/en/otro-repo/token.json' // Cambia esta ruta por la real dentro del repo clonado
+        TOKEN_JSON_PATH = 'ruta/en/otro-repo/tokens.json' // Cambia esta ruta por la real dentro del repo clonado
     }
 
     stages {
-        stage('Clone Token Repo') {
+        stage('Checkout Token Repository') {
             steps {
                 script {
-                    sh 'rm -rf temp_token_repo'
-                    sh "git clone ${env.TOKEN_REPO} temp_token_repo"
-                    sh "cp temp_token_repo/${env.TOKEN_JSON_PATH} ${env.TOKEN_JSON}"
+                    cleanWs()
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: '*/master']],
+                        userRemoteConfigs: [[
+                            url: env.TOKEN_REPO,
+                            credentialsId: 'master-credentials'
+                        ]]
+                    ])
+                    sh "cp ${env.TOKEN_JSON_PATH} ${env.TOKEN_JSON}"
+                }
+            }
+        }
+        stage('Show Token JSON') {
+            steps {
+                script {
+                    echo 'Contenido actual de token.json:'
+                    sh "cat ${env.TOKEN_JSON}"
                 }
             }
         }
@@ -28,6 +43,10 @@ pipeline {
                     def results = []
 
                     tokens.each { key, token ->
+                        if (!token?.trim()) {
+                            echo "Token vacío para ${key}, se omite."
+                            return // Salta este token
+                        }
                         def namespace = ""
                         def status = ""
                         // Intenta login con el interno
