@@ -56,6 +56,15 @@ pipeline {
                                     script: 'oc get project -o jsonpath="{.metadata.name}"',
                                     returnStdout: true
                                 ).trim()
+                                if (!namespace) {
+                                    namespace = sh(
+                                        script: 'oc project -q',
+                                        returnStdout: true
+                                    ).trim()
+                                }
+                                if (!namespace) {
+                                    namespace = "No se pudo obtener namespace"
+                                }
                                 echo "Login exitoso en INTERNAL para ${key}. Namespace: ${namespace}"
                                 sh 'oc logout'
                             } else {
@@ -73,6 +82,15 @@ pipeline {
                                         script: 'oc get project -o jsonpath="{.metadata.name}"',
                                         returnStdout: true
                                     ).trim()
+                                    if (!namespace) {
+                                        namespace = sh(
+                                            script: 'oc project -q',
+                                            returnStdout: true
+                                        ).trim()
+                                    }
+                                    if (!namespace) {
+                                        namespace = "No se pudo obtener namespace"
+                                    }
                                     echo "Login exitoso en EXTERNAL para ${key}. Namespace: ${namespace}"
                                     sh 'oc logout'
                                 } else {
@@ -90,6 +108,15 @@ pipeline {
                                             script: 'oc get project -o jsonpath="{.metadata.name}"',
                                             returnStdout: true
                                         ).trim()
+                                        if (!namespace) {
+                                            namespace = sh(
+                                                script: 'oc project -q',
+                                                returnStdout: true
+                                            ).trim()
+                                        }
+                                        if (!namespace) {
+                                            namespace = "No se pudo obtener namespace"
+                                        }
                                         echo "Login exitoso en DRS para ${key}. Namespace: ${namespace}"
                                         sh 'oc logout'
                                     } else {
