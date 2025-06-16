@@ -7,9 +7,20 @@ pipeline {
         DRS_SERVER = 'https://drs.example.com:6443'
         TOKEN_JSON = 'token.json'
         OUTPUT_JSON = 'namespaces.json'
+        TOKEN_REPO = 'https://github.com/usuario/otro-repo-con-token.git' // Cambia esta URL por la real
+        TOKEN_JSON_PATH = 'ruta/en/otro-repo/token.json' // Cambia esta ruta por la real dentro del repo clonado
     }
 
     stages {
+        stage('Clone Token Repo') {
+            steps {
+                script {
+                    sh 'rm -rf temp_token_repo'
+                    sh "git clone ${env.TOKEN_REPO} temp_token_repo"
+                    sh "cp temp_token_repo/${env.TOKEN_JSON_PATH} ${env.TOKEN_JSON}"
+                }
+            }
+        }
         stage('Extract Namespaces') {
             steps {
                 script {
