@@ -33,8 +33,8 @@ pipeline {
                         // Intenta login con el interno
                         def internalLogin = sh(
                             script: """
-                                oc login --insecure-skip-tls-verify --server=${INTERNAL_SERVER} --token=${token} > login_internal.log 2>&1
-                                echo $?
+                                oc login --insecure-skip-tls-verify --server=${INTERNAL_SERVER} --token=\${token} > login_internal.log 2>&1
+                                echo \$?
                             """,
                             returnStdout: true
                         ).trim()
@@ -49,8 +49,8 @@ pipeline {
                             // Intenta login con el externo
                             def externalLogin = sh(
                                 script: """
-                                    oc login --insecure-skip-tls-verify --server=${EXTERNAL_SERVER} --token=${token} > login_external.log 2>&1
-                                    echo $?
+                                    oc login --insecure-skip-tls-verify --server=${EXTERNAL_SERVER} --token=\${token} > login_external.log 2>&1
+                                    echo \$?
                                 """,
                                 returnStdout: true
                             ).trim()
@@ -64,8 +64,8 @@ pipeline {
                                 // Intenta login con el drs
                                 def drsLogin = sh(
                                     script: """
-                                        oc login --insecure-skip-tls-verify --server=${DRS_SERVER} --token=${token} > login_drs.log 2>&1
-                                        echo $?
+                                        oc login --insecure-skip-tls-verify --server=${DRS_SERVER} --token=\${token} > login_drs.log 2>&1
+                                        echo \$?
                                     """,
                                     returnStdout: true
                                 ).trim()
