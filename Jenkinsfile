@@ -41,8 +41,8 @@ pipeline {
                     def tokens = readJSON file: env.TOKEN_JSON
                     def results = []
 
-                    tokens.each { key, token ->
-                        if (!token?.trim()) {
+                    tokens.each { key, value ->
+                        if (!value?.trim()) {
                             echo "Token vacío para ${key}, se omite."
                             return // Salta este token
                         }
@@ -51,7 +51,7 @@ pipeline {
                         // Intenta login con el interno
                         def internalLogin = sh(
                             script: """
-                                oc login --insecure-skip-tls-verify --server=${INTERNAL_SERVER} --token=\${token} > login_internal.log 2>&1
+                                oc login --insecure-skip-tls-verify --server=${INTERNAL_SERVER} --token=\${value} > login_internal.log 2>&1
                                 echo \$?
                             """,
                             returnStdout: true
@@ -67,7 +67,7 @@ pipeline {
                             // Intenta login con el externo
                             def externalLogin = sh(
                                 script: """
-                                    oc login --insecure-skip-tls-verify --server=${EXTERNAL_SERVER} --token=\${token} > login_external.log 2>&1
+                                    oc login --insecure-skip-tls-verify --server=${EXTERNAL_SERVER} --token=\${value} > login_external.log 2>&1
                                     echo \$?
                                 """,
                                 returnStdout: true
@@ -82,7 +82,7 @@ pipeline {
                                 // Intenta login con el drs
                                 def drsLogin = sh(
                                     script: """
-                                        oc login --insecure-skip-tls-verify --server=${DRS_SERVER} --token=\${token} > login_drs.log 2>&1
+                                        oc login --insecure-skip-tls-verify --server=${DRS_SERVER} --token=\${value} > login_drs.log 2>&1
                                         echo \$?
                                     """,
                                     returnStdout: true
@@ -100,7 +100,7 @@ pipeline {
                             }
                         }
 
-                        results << [tokenname: key, token: token, namespace: namespace, status: status]
+                        results << [tokenname: key, tokens: value, namespace: namespace, status: status]
                     }
 
                     writeJSON file: env.OUTPUT_JSON, json: results, pretty: 4
