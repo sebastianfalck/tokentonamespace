@@ -63,6 +63,7 @@ pipeline {
                                 script: 'oc get project -o jsonpath="{.metadata.name}"',
                                 returnStdout: true
                             ).trim()
+                            sh 'oc logout'
                         } else {
                             // Intenta login con el externo
                             def externalLogin = sh(
@@ -77,6 +78,7 @@ pipeline {
                                     script: 'oc get project -o jsonpath="{.metadata.name}"',
                                     returnStdout: true
                                 ).trim()
+                                sh 'oc logout'
                             } else {
                                 // Intenta login con el drs
                                 def drsLogin = sh(
@@ -91,6 +93,7 @@ pipeline {
                                         script: 'oc get project -o jsonpath="{.metadata.name}"',
                                         returnStdout: true
                                     ).trim()
+                                    sh 'oc logout'
                                 } else {
                                     status = "expired"
                                     namespace = ""
