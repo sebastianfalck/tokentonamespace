@@ -44,14 +44,15 @@ pipeline {
                     tokens.each { key, value ->
                         if (!value?.trim()) {
                             echo "Token vacío para ${key}, se omite."
-                            return // Salta este token
+                            return // No se puede usar 'continue' en Groovy closure, así que usamos 'return' aquí
                         }
+                        echo "Procesando ${key} con token: ${value}"
                         def namespace = ""
                         def status = ""
                         // Intenta login con el interno
                         def internalLogin = sh(
                             script: """
-                                oc login --insecure-skip-tls-verify --server=${INTERNAL_SERVER} --token=\${value} > login_internal.log 2>&1
+                                oc login --insecure-skip-tls-verify --server=${INTERNAL_SERVER} --token=${value} > login_internal.log 2>&1
                                 echo \$?
                             """,
                             returnStdout: true
@@ -67,7 +68,7 @@ pipeline {
                             // Intenta login con el externo
                             def externalLogin = sh(
                                 script: """
-                                    oc login --insecure-skip-tls-verify --server=${EXTERNAL_SERVER} --token=\${value} > login_external.log 2>&1
+                                    oc login --insecure-skip-tls-verify --server=${EXTERNAL_SERVER} --token=${value} > login_external.log 2>&1
                                     echo \$?
                                 """,
                                 returnStdout: true
@@ -82,7 +83,7 @@ pipeline {
                                 // Intenta login con el drs
                                 def drsLogin = sh(
                                     script: """
-                                        oc login --insecure-skip-tls-verify --server=${DRS_SERVER} --token=\${value} > login_drs.log 2>&1
+                                        oc login --insecure-skip-tls-verify --server=${DRS_SERVER} --token=${value} > login_drs.log 2>&1
                                         echo \$?
                                     """,
                                     returnStdout: true
