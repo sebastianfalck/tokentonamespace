@@ -27,14 +27,6 @@ pipeline {
                 }
             }
         }
-        stage('Show Token JSON') {
-            steps {
-                script {
-                    echo 'Contenido actual de tokens.json:'
-                    sh "cat ${env.TOKEN_JSON}"
-                }
-            }
-        }
         stage('Extract Namespaces') {
             steps {
                 script {
@@ -46,60 +38,66 @@ pipeline {
                             echo "Token vacío para ${key}, se omite."
                             return // No se puede usar 'continue' en Groovy closure, así que usamos 'return' aquí
                         }
-                        echo "Procesando ${key} con token: ${value}"
+                        echo "Procesando ${key}..."
                         def namespace = ""
                         def status = ""
-                        // Intenta login con el interno
-                        def internalLogin = sh(
-                            script: """
-                                oc login --insecure-skip-tls-verify --server=${INTERNAL_SERVER} --token=${value} > login_internal.log 2>&1
-                            """,
-                            returnStatus: true
-                        )
-
-                        if (internalLogin == 0) {
-                            status = "internal"
-                            namespace = sh(
-                                script: 'oc get project -o jsonpath="{.metadata.name}"',
-                                returnStdout: true
-                            ).trim()
-                            echo "Login exitoso en INTERNAL para ${key}. Namespace: ${namespace}"
-                            sh 'oc logout'
-                        } else {
-                            // Intenta login con el externo
-                            def externalLogin = sh(
+                        withCredentials([string(credentialsId: value, variable: 'TOKEN_SECRET')]) {
+                            // Intenta login con el interno
+                            def internalLogin = sh(
                                 script: """
-                                    oc login --insecure-skip-tls-verify --server=${EXTERNAL_SERVER} --token=${value} > login_external.log 2>&1
+                                    oc login --insecure-skip-tls-verify --server=${INTERNAL_SERVER} --token=$TOKEN_SECRET > login_internal.log 2>&1
                                 """,
                                 returnStatus: true
                             )
-                            if (externalLogin == 0) {
-                                status = "external"
+
+                            if (internalLogin == 0) {
+                                status = "internal"
                                 namespace = sh(
                                     script: 'oc get project -o jsonpath="{.metadata.name}"',
                                     returnStdout: true
                                 ).trim()
-                                echo "Login exitoso en EXTERNAL para ${key}. Namespace: ${namespace}"
+                                echo "Login exitoso en INTERNAL para ${key}. Namespace: ${namespace}"
                                 sh 'oc logout'
                             } else {
-                                // Intenta login con el drs
-                                def drsLogin = sh(
+                                echo "Login fallido en INTERNAL para ${key}."
+                                // Intenta login con el externo
+                                def externalLogin = sh(
                                     script: """
-                                        oc login --insecure-skip-tls-verify --server=${DRS_SERVER} --token=${value} > login_drs.log 2>&1
+                                        oc login --insecure-skip-tls-verify --server=${EXTERNAL_SERVER} --token=$TOKEN_SECRET > login_external.log 2>&1
                                     """,
                                     returnStatus: true
                                 )
-                                if (drsLogin == 0) {
-                                    status = "drs"
+                                if (externalLogin == 0) {
+                                    status = "external"
                                     namespace = sh(
                                         script: 'oc get project -o jsonpath="{.metadata.name}"',
                                         returnStdout: true
                                     ).trim()
-                                    echo "Login exitoso en DRS para ${key}. Namespace: ${namespace}"
+                                    echo "Login exitoso en EXTERNAL para ${key}. Namespace: ${namespace}"
                                     sh 'oc logout'
                                 } else {
-                                    status = "expired"
-                                    namespace = ""
+                                    echo "Login fallido en EXTERNAL para ${key}."
+                                    // Intenta login con el drs
+                                    def drsLogin = sh(
+                                        script: """
+                                            oc login --insecure-skip-tls-verify --server=${DRS_SERVER} --token=$TOKEN_SECRET > login_drs.log 2>&1
+                                        """,
+                                        returnStatus: true
+                                    )
+                                    if (drsLogin == 0) {
+                                        status = "drs"
+                                        namespace = sh(
+                                            script: 'oc get project -o jsonpath="{.metadata.name}"',
+                                            returnStdout: true
+                                        ).trim()
+                                        echo "Login exitoso en DRS para ${key}. Namespace: ${namespace}"
+                                        sh 'oc logout'
+                                    } else {
+                                        echo "Login fallido en DRS para ${key}."
+                                        echo "Todos los intentos de login fallaron para ${key}."
+                                        status = "expired"
+                                        namespace = ""
+                                    }
                                 }
                             }
                         }
