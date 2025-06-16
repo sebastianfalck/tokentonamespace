@@ -63,6 +63,7 @@ pipeline {
                                 script: 'oc get project -o jsonpath="{.metadata.name}"',
                                 returnStdout: true
                             ).trim()
+                            echo "Login exitoso en INTERNAL para ${key}. Namespace: ${namespace}"
                             sh 'oc logout'
                         } else {
                             // Intenta login con el externo
@@ -78,6 +79,7 @@ pipeline {
                                     script: 'oc get project -o jsonpath="{.metadata.name}"',
                                     returnStdout: true
                                 ).trim()
+                                echo "Login exitoso en EXTERNAL para ${key}. Namespace: ${namespace}"
                                 sh 'oc logout'
                             } else {
                                 // Intenta login con el drs
@@ -93,6 +95,7 @@ pipeline {
                                         script: 'oc get project -o jsonpath="{.metadata.name}"',
                                         returnStdout: true
                                     ).trim()
+                                    echo "Login exitoso en DRS para ${key}. Namespace: ${namespace}"
                                     sh 'oc logout'
                                 } else {
                                     status = "expired"
