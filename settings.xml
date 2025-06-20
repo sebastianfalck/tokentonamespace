@@ -1,3 +1,8 @@
+curl -s -u jenkins:TU_PASS \
+  https://TU_NEXUS_HOST/service/rest/v1/repositories | \
+grep -oP '"name"\s*:\s*"\K[^"]+'
+
+
 <?xml version="1.0" encoding="UTF-8"?>
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
