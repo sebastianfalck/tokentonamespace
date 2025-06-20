@@ -1,55 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 
-                              http://maven.apache.org/xsd/settings-1.0.0.xsd">
+                              https://maven.apache.org/xsd/settings-1.0.0.xsd">
 
+  <!-- ========== SERVIDORES Nexus (releases y snapshots) ========== -->
   <servers>
-    <!-- Nexus de desarrollo -->
     <server>
-      <id>nexus-dev-releases</id>
-      <username>usuario-dev</username>
-      <password>password-dev</password>
+      <id>nexus-releases</id>
+      <username>TU_USUARIO_RELEASE</username>
+      <password>TU_CONTRASEÑA_RELEASE</password>
     </server>
     <server>
-      <id>nexus-dev-snapshots</id>
-      <username>usuario-dev</username>
-      <password>password-dev</password>
-    </server>
-
-    <!-- Nexus de producción -->
-    <server>
-      <id>nexus-prod-releases</id>
-      <username>usuario-prod</username>
-      <password>password-prod</password>
-    </server>
-    <server>
-      <id>nexus-prod-snapshots</id>
-      <username>usuario-prod</username>
-      <password>password-prod</password>
+      <id>nexus-snapshots</id>
+      <username>TU_USUARIO_SNAPSHOT</username>
+      <password>TU_CONTRASEÑA_SNAPSHOT</password>
     </server>
   </servers>
 
-  <profiles>
-    <!-- Perfil para despliegue a Nexus DEV -->
-    <profile>
-      <id>nexus-dev</id>
-      <properties>
-        <altDeploymentRepository>nexus-dev-releases::default::https://nexus.dev.com/repository/maven-releases/</altDeploymentRepository>
-      </properties>
-    </profile>
+  <!-- ========== PROXY CORPORATIVO ========== -->
+  <proxies>
+    <proxy>
+      <id>corporate-proxy</id>
+      <active>true</active>
+      <protocol>http</protocol>
+      <host>IP_O_HOST_DEL_PROXY</host>
+      <port>PUERTO_DEL_PROXY</port>
+      <!-- Si tu proxy requiere autenticación, descomenta estas líneas:
+      <username>USUARIO_PROXY</username>
+      <password>CONTRASEÑA_PROXY</password>
+      -->
+      <!-- Evita que el proxy intercepte tus Nexus internos -->
+      <nonProxyHosts>localhost|127.0.0.1|*.miempresa.local|nexus-release-url|nexus-snap-url</nonProxyHosts>
+    </proxy>
+  </proxies>
 
-    <!-- Perfil para despliegue a Nexus PROD -->
+  <!-- ========== MIRROR para central & plugins (opcional) ========== -->
+  <mirrors>
+    <mirror>
+      <id>nexus-central</id>
+      <mirrorOf>central</mirrorOf>
+      <url>http://nexus-release-url/repository/maven-central/</url>
+    </mirror>
+  </mirrors>
+
+  <!-- ========== PERFILES con repositorios Nexus ========== -->
+  <profiles>
     <profile>
-      <id>nexus-prod</id>
-      <properties>
-        <altDeploymentRepository>nexus-prod-releases::default::https://nexus.prod.com/repository/maven-releases/</altDeploymentRepository>
-      </properties>
+      <id>nexus</id>
+      <repositories>
+        <!-- Releases -->
+        <repository>
+          <id>nexus-releases</id>
+          <url>http://nexus-release-url/repository/releases/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </repository>
+        <!-- Snapshots -->
+        <repository>
+          <id>nexus-snapshots</id>
+          <url>http://nexus-snap-url/repository/snapshots/</url>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </repository>
+      </repositories>
+      <pluginRepositories>
+        <pluginRepository>
+          <id>nexus-releases</id>
+          <url>http://nexus-release-url/repository/releases/</url>
+          <releases>
+            <enabled>true</enabled>
+          </releases>
+          <snapshots>
+            <enabled>false</enabled>
+          </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+          <id>nexus-snapshots</id>
+          <url>http://nexus-snap-url/repository/snapshots/</url>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+        </pluginRepository>
+      </pluginRepositories>
     </profile>
   </profiles>
 
-  <!-- No activar perfiles automáticamente -->
   <activeProfiles>
-    <!-- Deja vacío para activar con -P -->
+    <!-- Activa el perfil que usa tus Nexus internos -->
+    <activeProfile>nexus</activeProfile>
   </activeProfiles>
-
 </settings>
